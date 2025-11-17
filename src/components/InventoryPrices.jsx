@@ -1,94 +1,122 @@
 import React, { useEffect, useState } from "react";
-import { addData, getAllData, updateData, deleteData } from "../data/db";
+import PremiumSlider from "./PremiumSlider";
+import PremiumTable from "./PremiumTable";
+import { Package, PlusCircle } from "lucide-react";
 
-export default function InventoryPrices() {
-  const [ingredients, setIngredients] = useState([]);
-  const [form, setForm] = useState({ market: "", brand: "", item: "", unit: "", price: "" });
+export default function Inventory() {
+  // Load initial data from localStorage OR use defaults
+  const defaultInventory = [
+    { item: "Self-Raising Flour (2000g)", price: 180, qty: 1 },
+    { item: "Milk (500ml)", price: 20, qty: 1 },
+    { item: "Sugar (1kg)", price: 150, qty: 1 },
+    { item: "Butter (500g)", price: 430, qty: 1 },
+  ];
 
+  const [inventory, setInventory] = useState(() => {
+    const saved = localStorage.getItem("inventory-data");
+    return saved ? JSON.parse(saved) : defaultInventory;
+  });
+
+  // Save to localStorage whenever inventory changes
   useEffect(() => {
-    refreshList();
-  }, []);
+    localStorage.setItem("inventory-data", JSON.stringify(inventory));
+  }, [inventory]);
 
-  function refreshList() {
-    getAllData("inventory").then((data) => setIngredients(data));
-  }
+  // Update quantity through premium slider
+  const updateQty = (index, newQty) => {
+    const updated = [...inventory];
+    updated[index].qty = newQty;
+    setInventory(updated);
+  };
 
-  function handleChange(e) {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  }
+  // Update price
+  const updatePrice = (index, newPrice) => {
+    const updated = [...inventory];
+    updated[index].price = parseInt(newPrice) || 0;
+    setInventory(updated);
+  };
 
-  function saveIngredient() {
-    if (!form.item || !form.unit || !form.price) return;
+  // Compute totals
+  const rows = inventory.map((row) => ({
+    Item: row.item,
+    Price: `KES ${row.price}`,
+    Quantity: row.qty,
+    Total: `KES ${row.qty * row.price}`,
+  }));
 
-    addData("inventory", {
-      ...form,
-      price: Number(form.price),
-      createdAt: Date.now(),
-    }).then(() => {
-      setForm({ market: "", brand: "", item: "", unit: "", price: "" });
-      refreshList();
-    });
-  }
-
-  function remove(id) {
-    deleteData("inventory", id).then(refreshList);
-  }
-
-  function editField(id, field, value) {
-    const updated = ingredients.find((i) => i.id === id);
-    updated[field] = field === "price" ? Number(value) : value;
-    updateData("inventory", updated).then(refreshList);
-  }
+  // Add new inventory item
+  const addNewItem = () => {
+    const updated = [
+      ...inventory,
+      { item: "New Item", price: 0, qty: 1 },
+    ];
+    setInventory(updated);
+  };
 
   return (
-    <div>
-      <h2 className="text-2xl font-bold mb-4 text-brand-darkbrown">Inventory Prices</h2>
-
-      {/* Add Ingredient Form */}
-      <div className="grid grid-cols-2 gap-4 mb-6">
-        <input name="market" value={form.market} onChange={handleChange} placeholder="Market" className="border p-2 rounded" />
-        <input name="brand" value={form.brand} onChange={handleChange} placeholder="Brand" className="border p-2 rounded" />
-        <input name="item" value={form.item} onChange={handleChange} placeholder="Item" className="border p-2 rounded" />
-        <input name="unit" value={form.unit} onChange={handleChange} placeholder="Unit (e.g. 2000g)" className="border p-2 rounded" />
-        <input name="price" value={form.price} onChange={handleChange} placeholder="Price per Unit (ksh)" className="border p-2 rounded" />
+    <div className="space-y-10">
+      {/* Title Bar */}
+      <div className="flex items-center gap-4">
+        <Package size={38} className="text-brand-dark-pink" />
+        <h1 className="font-serif text-4xl text-brand-brown">Inventory</h1>
       </div>
 
-      <button onClick={saveIngredient} className="bg-brand-brown text-brand-cream px-4 py-2 rounded-xl shadow mb-8">Add Ingredient</button>
+      {/* Inventory Items List */}
+      <div className="space-y-8">
+        {inventory.map((item, index) => (
+          <div
+            key={index}
+            className="premium-card shadow-card border border-brand-pink/30"
+          >
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="font-serif text-2xl">{item.item}</h2>
+            </div>
 
-      {/* Ingredient Table */}
-      <table className="w-full text-left border rounded-xl overflow-hidden shadow">
-        <thead className="bg-brand-lightbrown text-white">
-          <tr>
-            <th className="p-2">Market</th>
-            <th className="p-2">Brand</th>
-            <th className="p-2">Item</th>
-            <th className="p-2">Unit</th>
-            <th className="p-2">Price</th>
-            <th className="p-2">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {ingredients.map((row) => (
-            <tr key={row.id} className="border-b">
-              <td className="p-2">{row.market}</td>
-              <td className="p-2">{row.brand}</td>
-              <td className="p-2">{row.item}</td>
-              <td className="p-2">{row.unit}</td>
-              <td className="p-2">
-                <input
-                  className="border p-1 w-24 rounded"
-                  type="number"
-                  defaultValue={row.price}
-                  onBlur={(e) => editField(row.id, "price", e.target.value)}
-                />
-              </td>
-              <td className="p-2">
-                <button onClick={() => remove(row.id)} className="text-red-600 font-bold">Delete</button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+            {/* Price Input */}
+            <div className="flex items-center gap-6 mb-6">
+              <label className="font-medium text-brand-brown">
+                Price per unit (KES):
+              </label>
+
+              <input
+                type="number"
+                value={item.price}
+                onChange={(e) => updatePrice(index, e.target.value)}
+                className="border rounded-lg px-4 py-2 w-32 shadow-inner outline-brand-dark-pink"
+              />
+            </div>
+
+            {/* Quantity Slider */}
+            <div>
+              <PremiumSlider
+                label="Quantity"
+                value={item.qty}
+                onChange={(value) => updateQty(index, value)}
+              />
+            </div>
+
+            {/* Total Display */}
+            <div className="text-right text-xl font-semibold mt-6 text-brand-dark-pink">
+              Total: KES {item.qty * item.price}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Add New Item */}
+      <button
+        onClick={addNewItem}
+        className="flex items-center gap-2 premium-card px-5 py-3 text-xl border border-brand-dark-pink/40 hover:bg-brand-pink/20 transition"
+      >
+        <PlusCircle size={26} />
+        Add Inventory Item
+      </button>
+
+      {/* Summary Table */}
+      <div className="mt-8">
+        <h2 className="font-serif text-2xl mb-4">Inventory Summary</h2>
+        <PremiumTable columns={["Item", "Price", "Quantity", "Total"]} data={rows} />
+      </div>
     </div>
   );
 }
