@@ -3,7 +3,7 @@ import {
   BrowserRouter as Router,
   Routes,
   Route,
-  Link
+  Link,
 } from "react-router-dom";
 
 // Component imports
@@ -14,6 +14,36 @@ import ProfitLoss from "./components/ProfitLoss";
 import RecordSales from "./components/RecordSales";
 import SalesHistory from "./components/SalesHistory";
 
+/* ---------------------------------------------------------
+   ERROR BOUNDARY — THIS IS IMPORTANT
+   It will show errors *inside your page* instead of a blank screen.
+----------------------------------------------------------- */
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div style={{ color: "red", padding: "20px" }}>
+          <h2>Component Error:</h2>
+          <p>{String(this.state.error)}</p>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
+/* ---------------------------------------------------------
+   MAIN APP
+----------------------------------------------------------- */
 export default function App() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
@@ -21,7 +51,7 @@ export default function App() {
     <Router>
       <div className="flex h-screen bg-brand-cream">
 
-        {/* Sidebar */}
+        {/* SIDEBAR */}
         <div
           className={`${
             sidebarOpen ? "w-64" : "w-16"
@@ -36,29 +66,4 @@ export default function App() {
 
           {sidebarOpen && (
             <nav className="flex flex-col mt-4 space-y-3 px-4">
-              <Link to="/" className="hover:underline">Batch Production</Link>
-              <Link to="/expenses" className="hover:underline">Expenses</Link>
-              <Link to="/inventory-prices" className="hover:underline">Inventory Prices</Link>
-              <Link to="/profit-loss" className="hover:underline">Profit & Loss</Link>
-              <Link to="/record-sales" className="hover:underline">Record Sales</Link>
-              <Link to="/sales-history" className="hover:underline">Sales History</Link>
-            </nav>
-          )}
-        </div>
-
-        {/* Main Content */}
-        <div className="flex-1 p-6 overflow-y-auto">
-          <Routes>
-            <Route path="/" element={<BatchProduction />} />
-            <Route path="/expenses" element={<Expenses />} />
-            <Route path="/inventory-prices" element={<InventoryPrices />} />
-            <Route path="/profit-loss" element={<ProfitLoss />} />
-            <Route path="/record-sales" element={<RecordSales />} />
-            <Route path="/sales-history" element={<SalesHistory />} />
-          </Routes>
-        </div>
-
-      </div>
-    </Router>
-  );
-}
+              <Link to="/" className="ho
