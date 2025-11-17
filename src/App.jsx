@@ -1,7 +1,88 @@
 import React, { useState } from "react";
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState("inventory");
+  const [activeTab, setActiimport React, { useState } from "react";
+import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
+
+// Import all components
+import InventoryPrices from "./components/InventoryPrices";
+import BatchProduction from "./components/BatchProduction";
+import RecordSales from "./components/RecordSales";
+import SalesHistory from "./components/SalesHistory";
+import Expenses from "./components/Expenses";
+import ProfitLoss from "./components/ProfitLoss";
+
+export default function App() {
+  const [collapsed, setCollapsed] = useState(false);
+
+  return (
+    <Router>
+      <div className="flex h-screen w-screen overflow-hidden">
+        {/* Sidebar */}
+        <div
+          className={`bg-brand-brown text-brand-cream h-full transition-all duration-300 shadow-xl flex flex-col ${
+            collapsed ? "w-16" : "w-64"
+          }`}
+        >
+          {/* Header */}
+          <div className="flex items-center justify-between p-4 font-bold text-xl border-b border-brand-lightbrown">
+            {!collapsed && <span>Cookie Cousin</span>}
+            <button
+              onClick={() => setCollapsed(!collapsed)}
+              className="text-brand-cream font-bold text-lg"
+            >
+              {collapsed ? "▶" : "◀"}
+            </button>
+          </div>
+
+          {/* Navigation */}
+          <nav className="flex-1 p-2 space-y-2">
+            <SidebarLink to="/inventory" label="Inventory" collapsed={collapsed} />
+            <SidebarLink to="/batch" label="Batch Production" collapsed={collapsed} />
+            <SidebarLink to="/sales" label="Record Sales" collapsed={collapsed} />
+            <SidebarLink to="/history" label="Sales History" collapsed={collapsed} />
+            <SidebarLink to="/expenses" label="Expenses" collapsed={collapsed} />
+            <SidebarLink to="/pl" label="Profit & Loss" collapsed={collapsed} />
+          </nav>
+        </div>
+
+        {/* Main Content */}
+        <div className="flex-1 overflow-auto p-8 bg-brand-cream text-brand-darkbrown">
+          <Routes>
+            <Route path="/inventory" element={<InventoryPrices />} />
+            <Route path="/batch" element={<BatchProduction />} />
+            <Route path="/sales" element={<RecordSales />} />
+            <Route path="/history" element={<SalesHistory />} />
+            <Route path="/expenses" element={<Expenses />} />
+            <Route path="/pl" element={<ProfitLoss />} />
+            <Route path="*" element={<Welcome />} />
+          </Routes>
+        </div>
+      </div>
+    </Router>
+  );
+}
+
+function SidebarLink({ to, label, collapsed }) {
+  return (
+    <Link
+      to={to}
+      className="block px-3 py-2 rounded-lg hover:bg-brand-lightbrown hover:text-white transition"
+    >
+      {collapsed ? label[0] : label}
+    </Link>
+  );
+}
+
+function Welcome() {
+  return (
+    <div>
+      <h1 className="text-3xl font-bold mb-4">Welcome to Cookie Cousin Tracker</h1>
+      <p className="text-lg">Use the sidebar to navigate through the system.</p>
+    </div>
+  );
+}
+veTab] = useState("inventory");
 
   return (
     <div className="min-h-screen bg-brand-cream text-brand-brown p-6">
