@@ -1,1 +1,8 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
+/* Global brand styles */
+body {
+  @apply bg-brand-cream text-brand-brown font-sans;
+}
