@@ -1,133 +1,175 @@
-import React, { useEffect, useState } from "react";
-import { getAllData, addData } from "../data/db";
+import React, { useState, useEffect } from "react";
+import PremiumSlider from "./PremiumSlider";
+import PremiumTable from "./PremiumTable";
+import { ChefHat, PlusCircle } from "lucide-react";
 
 export default function BatchProduction() {
-  const [ingredients, setIngredients] = useState([]);
-  const [batchIngredients, setBatchIngredients] = useState([]);
-  const [flavor, setFlavor] = useState("");
-  const [yieldCount, setYieldCount] = useState("");
-  const [totalCost, setTotalCost] = useState(0);
+  // Default ingredient usage for a batch
+  const defaultIngredients = [
+    { name: "Self-Raising Flour (g)", qty: 500, unitCost: 180 / 2000 }, // cost per gram
+    { name: "Milk (ml)", qty: 200, unitCost: 20 / 500 },                // cost per ml
+    { name: "Sugar (g)", qty: 150, unitCost: 150 / 1000 },              // cost per gram
+    { name: "Butter (g)", qty: 200, unitCost: 430 / 500 },              // cost per gram
+  ];
+
+  const [ingredients, setIngredients] = useState(() => {
+    const saved = localStorage.getItem("batch-ingredients");
+    return saved ? JSON.parse(saved) : defaultIngredients;
+  });
+
+  const [yieldCount, setYieldCount] = useState(() => {
+    const saved = localStorage.getItem("batch-yield");
+    return saved ? JSON.parse(saved) : 24; // default 24 cookies per batch
+  });
 
   useEffect(() => {
-    getAllData("inventory").then((data) => setIngredients(data));
-  }, []);
+    localStorage.setItem("batch-ingredients", JSON.stringify(ingredients));
+    localStorage.setItem("batch-yield", JSON.stringify(yieldCount));
+  }, [ingredients, yieldCount]);
 
-  useEffect(() => {
-    const cost = batchIngredients.reduce((sum, ing) => sum + ing.cost, 0);
-    setTotalCost(cost);
-  }, [batchIngredients]);
+  // Update ingredient usage
+  const updateQty = (index, newQty) => {
+    const updated = [...ingredients];
+    updated[index].qty = newQty;
+    setIngredients(updated);
+  };
 
-  function addIngredientRow() {
-    setBatchIngredients([
-      ...batchIngredients,
-      { id: Date.now(), ingredientId: "", qty: 0, cost: 0 },
-    ]);
-  }
+  // Update unit cost manually
+  const updateUnitCost = (index, cost) => {
+    const updated = [...ingredients];
+    updated[index].unitCost = parseFloat(cost) || 0;
+    setIngredients(updated);
+  };
 
-  function updateIngredientRow(id, field, value) {
-    const updated = batchIngredients.map((row) => {
-      if (row.id !== id) return row;
+  // Add a new ingredient line
+  const addIngredient = () => {
+    const updated = [
+      ...ingredients,
+      { name: "New Ingredient", qty: 0, unitCost: 0 },
+    ];
+    setIngredients(updated);
+  };
 
-      if (field === "ingredientId") {
-        const ing = ingredients.find((i) => i.id == value);
-        return { ...row, ingredientId: value, cost: (row.qty / 1) * ing.price };
-      }
+  // Compute total cost for single ingredient
+  const ingredientTotal = (i) => (i.qty * i.unitCost).toFixed(2);
 
-      if (field === "qty") {
-        const ing = ingredients.find((i) => i.id == row.ingredientId);
-        const cost = ing ? (Number(value) / 1) * ing.price : 0;
-        return { ...row, qty: Number(value), cost };
-      }
+  // Compute batch totals
+  const batchCost = ingredients.reduce(
+    (sum, i) => sum + i.qty * i.unitCost,
+    0
+  );
 
-      return row;
-    });
+  const costPerCookie = batchCost / yieldCount;
+  const costPerPack = costPerCookie * 6; // assuming 6 cookies per pack
 
-    setBatchIngredients(updated);
-  }
-
-  function saveBatch() {
-    if (!flavor || !yieldCount || batchIngredients.length === 0) return;
-
-    const batch = {
-      flavor,
-      yield: Number(yieldCount),
-      ingredients: batchIngredients,
-      totalCost,
-      costPerCookie: totalCost / Number(yieldCount),
-      createdAt: Date.now(),
-    };
-
-    addData("batches", batch).then(() => {
-      setFlavor("");
-      setYieldCount("");
-      setBatchIngredients([]);
-      setTotalCost(0);
-    });
-  }
+  // Prepare table rows
+  const tableRows = ingredients.map((i) => ({
+    Ingredient: i.name,
+    "Usage": `${i.qty}`,
+    "Unit Cost": `KES ${i.unitCost.toFixed(2)}`,
+    "Total": `KES ${ingredientTotal(i)}`
+  }));
 
   return (
-    <div>
-      <h2 className="text-2xl font-bold mb-4 text-brand-darkbrown">Batch Production</h2>
-
-      <div className="grid grid-cols-2 gap-4 mb-6">
-        <input
-          value={flavor}
-          onChange={(e) => setFlavor(e.target.value)}
-          placeholder="Cookie Flavor (e.g. Ruby Bite)"
-          className="border p-2 rounded"
-        />
-
-        <input
-          value={yieldCount}
-          type="number"
-          onChange={(e) => setYieldCount(e.target.value)}
-          placeholder="Yield (cookies produced)"
-          className="border p-2 rounded"
-        />
+    <div className="space-y-10">
+      {/* Title */}
+      <div className="flex items-center gap-4">
+        <ChefHat size={38} className="text-brand-dark-pink" />
+        <h1 className="font-serif text-4xl text-brand-brown">Batch Production</h1>
       </div>
 
-      <button onClick={addIngredientRow} className="bg-brand-brown text-brand-cream px-4 py-2 rounded-xl shadow mb-6">
-        + Add Ingredient Used
-      </button>
-
-      {batchIngredients.map((row) => (
-        <div key={row.id} className="grid grid-cols-3 gap-4 mb-4 p-4 border rounded-xl">
-          <select
-            className="border p-2 rounded"
-            value={row.ingredientId}
-            onChange={(e) => updateIngredientRow(row.id, "ingredientId", e.target.value)}
+      {/* Ingredient Cards */}
+      <div className="space-y-8">
+        {ingredients.map((ing, index) => (
+          <div
+            key={index}
+            className="premium-card border border-brand-pink/30 shadow-card"
           >
-            <option value="">Select Ingredient</option>
-            {ingredients.map((ing) => (
-              <option key={ing.id} value={ing.id}>
-                {ing.item} ({ing.unit})
-              </option>
-            ))}
-          </select>
+            <h2 className="font-serif text-2xl mb-4">{ing.name}</h2>
 
-          <input
-            type="number"
-            className="border p-2 rounded"
-            placeholder="Qty used (same unit)"
-            value={row.qty}
-            onChange={(e) => updateIngredientRow(row.id, "qty", e.target.value)}
-          />
+            {/* Unit Cost */}
+            <div className="flex items-center gap-6 mb-6">
+              <label className="font-medium text-brand-brown">
+                Unit Cost (KES):
+              </label>
 
-          <div className="p-2 font-semibold text-brand-darkbrown">Cost: KSh {row.cost.toFixed(2)}</div>
-        </div>
-      ))}
+              <input
+                type="number"
+                value={ing.unitCost}
+                onChange={(e) => updateUnitCost(index, e.target.value)}
+                className="border rounded-lg px-4 py-2 w-32 shadow-inner outline-brand-dark-pink"
+              />
+            </div>
 
-      <div className="mt-6 p-4 bg-brand-lightbrown text-white rounded-xl text-lg font-bold">
-        Total Batch Cost: KSh {totalCost.toFixed(2)} <br />
-        Cost Per Cookie: KSh {yieldCount ? (totalCost / yieldCount).toFixed(2) : "0.00"}
+            {/* Quantity Slider */}
+            <PremiumSlider
+              label="Quantity Used"
+              value={ing.qty}
+              onChange={(v) => updateQty(index, v)}
+            />
+
+            {/* Total */}
+            <div className="text-right text-xl font-semibold mt-6 text-brand-dark-pink">
+              Total: KES {ingredientTotal(ing)}
+            </div>
+          </div>
+        ))}
       </div>
 
+      {/* Add Ingredient */}
       <button
-        onClick={saveBatch}
-        className="mt-6 bg-brand-brown text-brand-cream px-6 py-3 rounded-xl shadow text-lg font-bold"
+        onClick={addIngredient}
+        className="premium-card flex items-center gap-2 px-5 py-3 text-xl border border-brand-dark-pink/40 hover:bg-brand-pink/20 transition"
       >
-        Save Batch
+        <PlusCircle size={26} />
+        Add Ingredient
       </button>
+
+      {/* Batch Yield */}
+      <div className="premium-card border border-brand-pink/30 shadow-card">
+        <h2 className="font-serif text-2xl mb-4">Batch Yield</h2>
+
+        <PremiumSlider
+          label="Cookies Produced"
+          value={yieldCount}
+          onChange={(v) => setYieldCount(v)}
+        />
+      </div>
+
+      {/* Summary */}
+      <div className="premium-card border border-brand-pink/30 shadow-card">
+        <h2 className="font-serif text-2xl mb-6">Cost Summary</h2>
+
+        <div className="space-y-3">
+          <div className="flex justify-between text-lg">
+            <span>Total Batch Cost:</span>
+            <span className="font-bold text-brand-dark-pink">KES {batchCost.toFixed(2)}</span>
+          </div>
+
+          <div className="flex justify-between text-lg">
+            <span>Cost per Cookie:</span>
+            <span className="font-bold text-brand-dark-pink">
+              KES {costPerCookie.toFixed(2)}
+            </span>
+          </div>
+
+          <div className="flex justify-between text-lg">
+            <span>Cost per Pack (6 cookies):</span>
+            <span className="font-bold text-brand-dark-pink">
+              KES {costPerPack.toFixed(2)}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Table */}
+      <div>
+        <h2 className="font-serif text-2xl mb-4">Batch Ingredient Table</h2>
+        <PremiumTable
+          columns={["Ingredient", "Usage", "Unit Cost", "Total"]}
+          data={tableRows}
+        />
+      </div>
     </div>
   );
 }
