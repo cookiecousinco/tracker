@@ -1,13 +1,25 @@
 import React, { useState } from "react";
 import { HashRouter as Router, Routes, Route, Link } from "react-router-dom";
 
-// Component imports
+// Lucide Icons
+import {
+  Menu,
+  Package,
+  Receipt,
+  ClipboardList,
+  PieChart,
+  ShoppingBag,
+  Clock,
+} from "lucide-react";
+
+// Pages
 import BatchProduction from "./components/BatchProduction";
 import Expenses from "./components/Expenses";
 import InventoryPrices from "./components/InventoryPrices";
 import ProfitLoss from "./components/ProfitLoss";
 import RecordSales from "./components/RecordSales";
 import SalesHistory from "./components/SalesHistory";
+import Dashboard from "./components/Dashboard"; // You will add this later
 
 // Error Boundary
 class ErrorBoundary extends React.Component {
@@ -30,6 +42,7 @@ class ErrorBoundary extends React.Component {
     return this.props.children;
   }
 }
+
 export default function App() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
@@ -37,33 +50,60 @@ export default function App() {
     <Router>
       <div className="flex h-screen bg-brand-cream">
 
-        {/* SIDEBAR */}
+        {/* ❄️ Animated Glass Sidebar */}
         <div
-          className={`${
-            sidebarOpen ? "w-64" : "w-16"
-          } bg-brand-pink text-white transition-all duration-300 flex flex-col`}
+          className={`glass-sidebar transition-all duration-500 flex flex-col rounded-r-premium
+          ${sidebarOpen ? "w-72" : "w-20"}`}
         >
+          {/* Toggle Button */}
           <button
-            className="bg-brand-dark-pink p-3"
             onClick={() => setSidebarOpen(!sidebarOpen)}
+            className="p-4 text-black hover:text-brand-dark-pink transition"
           >
-            {sidebarOpen ? "◀" : "▶"}
+            <Menu size={28} />
           </button>
 
-          {/* Sidebar links will go here */}
-          <nav className="flex flex-col mt-4 space-y-3 px-4">
-            <Link to="/" className="hover:underline">Batch Production</Link>
-            <Link to="/expenses" className="hover:underline">Expenses</Link>
-            <Link to="/inventory-prices" className="hover:underline">Inventory Prices</Link>
-            <Link to="/profit-loss" className="hover:underline">Profit & Loss</Link>
-            <Link to="/record-sales" className="hover:underline">Record Sales</Link>
-            <Link to="/sales-history" className="hover:underline">Sales History</Link>
+          {/* Navigation */}
+          <nav className="flex flex-col mt-6 space-y-4 px-4">
+
+            <Link to="/" className="premium-link flex items-center space-x-3">
+              <Package size={22} />
+              {sidebarOpen && <span>Batch Production</span>}
+            </Link>
+
+            <Link to="/expenses" className="premium-link flex items-center space-x-3">
+              <Receipt size={22} />
+              {sidebarOpen && <span>Expenses</span>}
+            </Link>
+
+            <Link to="/inventory-prices" className="premium-link flex items-center space-x-3">
+              <ClipboardList size={22} />
+              {sidebarOpen && <span>Inventory Prices</span>}
+            </Link>
+
+            <Link to="/profit-loss" className="premium-link flex items-center space-x-3">
+              <PieChart size={22} />
+              {sidebarOpen && <span>Profit & Loss</span>}
+            </Link>
+
+            <Link to="/record-sales" className="premium-link flex items-center space-x-3">
+              <ShoppingBag size={22} />
+              {sidebarOpen && <span>Record Sales</span>}
+            </Link>
+
+            <Link to="/sales-history" className="premium-link flex items-center space-x-3">
+              <Clock size={22} />
+              {sidebarOpen && <span>Sales History</span>}
+            </Link>
+
           </nav>
         </div>
 
-        {/* MAIN CONTENT */}
-        <div className="flex-1 p-6 overflow-y-auto">
+        {/* 🌟 Main Content */}
+        <div className="flex-1 p-8 overflow-y-auto">
+
           <Routes>
+
             <Route
               path="/"
               element={
@@ -72,6 +112,7 @@ export default function App() {
                 </ErrorBoundary>
               }
             />
+
             <Route
               path="/expenses"
               element={
@@ -80,6 +121,7 @@ export default function App() {
                 </ErrorBoundary>
               }
             />
+
             <Route
               path="/inventory-prices"
               element={
@@ -88,6 +130,7 @@ export default function App() {
                 </ErrorBoundary>
               }
             />
+
             <Route
               path="/profit-loss"
               element={
@@ -96,6 +139,7 @@ export default function App() {
                 </ErrorBoundary>
               }
             />
+
             <Route
               path="/record-sales"
               element={
@@ -104,6 +148,7 @@ export default function App() {
                 </ErrorBoundary>
               }
             />
+
             <Route
               path="/sales-history"
               element={
@@ -112,9 +157,9 @@ export default function App() {
                 </ErrorBoundary>
               }
             />
+
           </Routes>
         </div>
-
       </div>
     </Router>
   );
