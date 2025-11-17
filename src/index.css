@@ -2,7 +2,31 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Global brand styles */
+/* Global body styling */
 body {
-  @apply bg-brand-cream text-brand-brown font-sans;
+  @apply font-sans bg-brand-cream text-black;
+}
+
+/* Premium scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-thumb {
+  background: #e5b3c8;
+  border-radius: 8px;
+}
+
+/* Card container */
+.premium-card {
+  @apply bg-white shadow-card rounded-premium p-8;
+}
+
+/* Premium sidebar link */
+.premium-link {
+  @apply text-lg font-semibold hover:text-brand-dark-pink transition-colors;
+}
+
+/* Glass sidebar */
+.glass-sidebar {
+  @apply bg-white/20 backdrop-blur-glass shadow-glass border border-white/30;
 }
