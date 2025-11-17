@@ -1,32 +1,29 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-/* Global body styling */
-body {
-  @apply font-sans bg-brand-cream text-black;
+/* --- table & text improvements --- */
+table {
+  border-spacing: 0;
+  border-collapse: collapse;
+  width: 100%;
+  color: #2b1a12; /* brand-brown */
+  font-size: 14px;
 }
 
-/* Premium scrollbars */
-::-webkit-scrollbar {
-  width: 8px;
-}
-::-webkit-scrollbar-thumb {
-  background: #e5b3c8;
-  border-radius: 8px;
+/* slightly darker header text */
+thead th {
+  color: #2b1a12;
 }
 
-/* Card container */
+/* better wrapping for composition/long cells */
+td {
+  word-break: break-word;
+}
+
+/* denser variant used by PremiumTable when needed */
+.dense-table td, .dense-table th {
+  padding: 6px 8px;
+  font-size: 13px;
+}
+
+/* subtle card inner spacing fix */
 .premium-card {
-  @apply bg-white shadow-card rounded-premium p-8;
-}
-
-/* Premium sidebar link */
-.premium-link {
-  @apply text-lg font-semibold hover:text-brand-dark-pink transition-colors;
-}
-
-/* Glass sidebar */
-.glass-sidebar {
-  @apply bg-white/20 backdrop-blur-glass shadow-glass border border-white/30;
+  padding: 18px;
 }
