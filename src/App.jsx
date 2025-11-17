@@ -3,10 +3,10 @@ import {
   BrowserRouter as Router,
   Routes,
   Route,
-  Link,
+  Link
 } from "react-router-dom";
 
-// Import your components
+// Component imports
 import BatchProduction from "./components/BatchProduction";
 import Expenses from "./components/Expenses";
 import InventoryPrices from "./components/InventoryPrices";
@@ -20,7 +20,7 @@ export default function App() {
   return (
     <Router>
       <div className="flex h-screen bg-brand-cream">
-        
+
         {/* Sidebar */}
         <div
           className={`${
@@ -53,4 +53,12 @@ export default function App() {
             <Route path="/expenses" element={<Expenses />} />
             <Route path="/inventory-prices" element={<InventoryPrices />} />
             <Route path="/profit-loss" element={<ProfitLoss />} />
-            <Rout
+            <Route path="/record-sales" element={<RecordSales />} />
+            <Route path="/sales-history" element={<SalesHistory />} />
+          </Routes>
+        </div>
+
+      </div>
+    </Router>
+  );
+}
